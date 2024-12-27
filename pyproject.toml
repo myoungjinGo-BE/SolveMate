@@ -9,7 +9,15 @@ readme = "README.md"
 python = "^3.12"
 django = "^5.1.4"
 djangorestframework = "^3.15.2"
+djangorestframework-simplejwt = "^5.3.1"
+mypy = "^1.14.0"
+drf-yasg = "^1.21.8"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-django = "^4.9.0"
+pytest-cov = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core"]
