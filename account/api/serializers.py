@@ -3,7 +3,7 @@ from rest_framework import serializers
 from account.models import User
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     kakao_id = serializers.CharField(
         write_only=True, allow_null=True, allow_blank=True, required=False

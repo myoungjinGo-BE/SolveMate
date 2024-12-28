@@ -131,3 +131,7 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+KAKAO_CLIENT_ID = "193e87458436f2acebe89e3acee04f15"
+KAKAO_REDIRECT_URI = "http://localhost:8000/api/oauth/kakao"
+KAKAO_CLIENT_SECRET = "U46DZDKL1hGMdOfY7kNVU0hCH9gpwL7s"
