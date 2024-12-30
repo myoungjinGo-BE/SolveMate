@@ -1,9 +1,12 @@
-from django.shortcuts import redirect
-from rest_framework import viewsets, status
+import os
+
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, viewsets
+from django.shortcuts import redirect
+
 
 from account.api.serializers import UserSerializer
 from account.models import User
@@ -11,7 +14,7 @@ from account.services.kako_oauth_service import KakaoOauthService
 from account.services.token_service import TokenService
 
 
-class UserViewSet(viewsets.GenericViewSet):
+class UserViewSet(viewsets.GenericViewSet, viewsets.mixins.RetrieveModelMixin):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = UserSerializer
@@ -35,12 +38,27 @@ class UserViewSet(viewsets.GenericViewSet):
 
 
 class KakaoOauthViewSet(APIView):
-    FRONT_END_ENDPOINT = "https://your-frontend-endpoint.com"
-
     def __init__(self):
         super().__init__()
-
         self.kakao_service = KakaoOauthService()
+
+    def redirect_with_tokens(self, access_token: str, refresh_token: str):
+        """
+        이미 가입된 사용자를 로그인 페이지로 리다이렉트합니다.
+        """
+        return redirect(
+            f"{os.getenv("FRONT_END_ENDPOINT")}/login"
+            f"?access_token={access_token}&refresh_token={refresh_token}"
+        )
+
+    def redirect_to_signup(self, kakao_id: str, username: str, profile_image: str):
+        """
+        신규 사용자를 회원가입 페이지로 리다이렉트합니다.
+        """
+        return redirect(
+            f"{os.getenv("FRONT_END_ENDPOINT")}/signup"
+            f"?kakao_id={kakao_id}&username={username}&profile_image={profile_image}"
+        )
 
     def get(self, request):
         code = request.query_params.get("code")
@@ -62,13 +80,11 @@ class KakaoOauthViewSet(APIView):
 
         if access_token and refresh_token:
             # 이미 가입된 사용자
-            return redirect(
-                f"{self.FRONT_END_ENDPOINT}/login?access_token={access_token}&refresh_token={refresh_token}"
-            )
+            return self.redirect_with_tokens(access_token, refresh_token)
 
         # 신규 사용자 회원가입 경로로 리다이렉트
-        return redirect(
-            f'{self.FRONT_END_ENDPOINT}/signup?kakao_id={user_info["id"]}'
-            f'&username={user_info["properties"]["nickname"]}'
-            f'&profile_image={user_info["properties"]["profile_image"]}'
+        return self.redirect_to_signup(
+            kakao_id=user_info["id"],
+            username=user_info["properties"]["nickname"],
+            profile_image=user_info["properties"]["profile_image"],
         )

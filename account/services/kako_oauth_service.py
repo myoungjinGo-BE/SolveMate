@@ -18,7 +18,6 @@ class KakaoOauthService:
         Kakao로부터 Access Token, Refresh Token 및 사용자 정보를 받아옵니다.
         """
         # Access Token 요청
-        print(code, "d?")
         access_token = self._get_access_token(code)
         if not access_token:
             return None, None, None
