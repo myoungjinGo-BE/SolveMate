@@ -1,5 +1,6 @@
 import os
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -60,6 +61,12 @@ class KakaoOauthViewSet(APIView):
             f"?kakao_id={kakao_id}&username={username}&profile_image={profile_image}"
         )
 
+    @swagger_auto_schema(
+        operation_summary="카카오 인증 엔드포인트",
+        operation_description="카카오 인증 후 리다이렉트 처리",
+        operation_id="kakao_oauth_login",
+        tags=["oauth"],
+    )
     def get(self, request):
         code = request.query_params.get("code")
         if not code:
