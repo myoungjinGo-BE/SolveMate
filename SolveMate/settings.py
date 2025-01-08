@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Local apps
     "account",
+    "challenge",
 ]
 
 MIDDLEWARE = [
