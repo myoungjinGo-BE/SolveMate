@@ -48,7 +48,7 @@ class KakaoOauthViewSet(APIView):
         이미 가입된 사용자를 로그인 페이지로 리다이렉트합니다.
         """
         return redirect(
-            f"{os.getenv("FRONT_END_ENDPOINT")}/login"
+            f"{os.getenv("FRONT_END_ENDPOINT")}/auth/login"
             f"?access_token={access_token}&refresh_token={refresh_token}"
         )
 
