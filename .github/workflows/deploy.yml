@@ -1,4 +1,4 @@
-name: Deploy to Mac mini
+name: Deploy
 
 on:
   push:

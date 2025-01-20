@@ -57,7 +57,7 @@ class KakaoOauthViewSet(APIView):
         신규 사용자를 회원가입 페이지로 리다이렉트합니다.
         """
         return redirect(
-            f"{os.getenv("FRONT_END_ENDPOINT")}/signup"
+            f"{os.getenv("FRONT_END_ENDPOINT")}/auth/signup"
             f"?kakao_id={kakao_id}&username={username}&profile_image={profile_image}"
         )
 
