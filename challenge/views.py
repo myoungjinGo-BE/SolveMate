@@ -4,11 +4,9 @@ from rest_framework.response import Response
 
 from challenge.models import (
     Problem,
-    GroupMembership,
     ChallengeGroup,
     ChallengeDay,
     Solution,
-    ChallengeParticipant,
     Challenge,
 )
 from .serializers import (
@@ -38,21 +36,6 @@ class ChallengeGroupViewSet(viewsets.ModelViewSet):
     serializer_class = ChallengeGroupSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
-
-    @action(detail=True, methods=["post"])
-    def join(self, request, pk=None):
-        group = self.get_object()
-        user = request.user
-
-        if not group.groupmembership_set.filter(user=user).exists():
-            GroupMembership.objects.create(user=user, group=group)
-            return Response({"status": "joined group"})
-        return Response(
-            {"status": "already a member"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
 
 class ChallengeViewSet(viewsets.ModelViewSet):
     queryset = Challenge.objects.all()
@@ -61,19 +44,6 @@ class ChallengeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
-
-    @action(detail=True, methods=["post"])
-    def join(self, request, pk=None):
-        challenge = self.get_object()
-        user = request.user
-
-        if not challenge.participants.filter(user=user).exists():
-            ChallengeParticipant.objects.create(user=user, challenge=challenge)
-            return Response({"status": "joined challenge"})
-        return Response(
-            {"status": "already participating"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
 
 class ChallengeDayViewSet(viewsets.ModelViewSet):
     queryset = ChallengeDay.objects.all()

@@ -25,12 +25,10 @@ class ChallengeGroup(models.Model):
 
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="created_groups",
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, through="GroupMembership", related_name="groups"
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -85,7 +83,6 @@ class ChallengeDay(models.Model):
     challenge = models.ForeignKey(
         Challenge, on_delete=models.CASCADE, related_name="challenge_days"
     )
-    day_number = models.PositiveIntegerField()  # 챌린지 내 날짜 순서
     date = models.DateField()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     author = models.ForeignKey(
@@ -95,11 +92,11 @@ class ChallengeDay(models.Model):
     )
 
     class Meta:
-        unique_together = ["challenge", "day_number"]
-        ordering = ["day_number"]
+        unique_together = ["challenge", "date"]
+        ordering = ["date"]
 
     def __str__(self):
-        return f"Day {self.day_number} - {self.problem.title}"
+        return f"Day {self.date} - {self.problem.title}"
 
 
 class Solution(models.Model):
@@ -126,21 +123,5 @@ class Solution(models.Model):
         ordering = ["-submitted_at"]
 
     def __str__(self):
-        return f"{self.user.username} - Day {self.challenge_day.day_number}"
+        return f"{self.user.username} - Day {self.challenge_day.date}"
 
-
-class ChallengeParticipant(models.Model):
-    """챌린지 참가자 정보를 저장하는 모델"""
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    challenge = models.ForeignKey(
-        Challenge, on_delete=models.CASCADE, related_name="participants"
-    )
-    joined_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        unique_together = ["user", "challenge"]
-
-    def __str__(self):
-        return f"{self.user.username} - {self.challenge.title}"

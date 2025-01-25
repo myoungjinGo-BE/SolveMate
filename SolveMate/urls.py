@@ -1,8 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
 from SolveMate.api_docs.swagger import SwaggerSettings
-from account.api.views import UserViewSet, KakaoOauthViewSet
-from challenge.api import views as challenge_views
+from account.views import UserViewSet, KakaoOauthViewSet
+from challenge import views as challenge_views
 
 # 기본 라우터
 main_router = routers.DefaultRouter(trailing_slash=False)

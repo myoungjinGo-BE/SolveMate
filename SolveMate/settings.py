@@ -68,6 +68,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "SolveMate.helpers.exception_handlers.custom_exception_handler",
+}
+
 ROOT_URLCONF = "SolveMate.urls"
 
 TEMPLATES = [

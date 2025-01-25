@@ -9,16 +9,17 @@ from rest_framework import status, viewsets
 from django.shortcuts import redirect
 
 
-from account.api.serializers import UserSerializer
+from account.serializers import UserSerializer
 from account.models import User
 from account.services.kako_oauth_service import KakaoOauthService
-from account.services.token_service import TokenService
+from account.services.user.services import UserService
 
 
 class UserViewSet(viewsets.GenericViewSet, viewsets.mixins.RetrieveModelMixin):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = UserSerializer
+    user_service = UserService()
 
     @action(
         methods=["POST"],
@@ -27,15 +28,8 @@ class UserViewSet(viewsets.GenericViewSet, viewsets.mixins.RetrieveModelMixin):
         permission_classes=[AllowAny],
     )
     def sign_up(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-
-        tokens = TokenService.generate_tokens_for_user(user)
-        response_data = serializer.data
-        response_data.update(tokens)
-
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        res_data = self.user_service.sign_up_user(request.data)
+        return Response(res_data, status=status.HTTP_201_CREATED)
 
 
 class KakaoOauthViewSet(APIView):

@@ -6,7 +6,6 @@ from challenge.models import (
     ChallengeGroup,
     ChallengeDay,
     Solution,
-    ChallengeParticipant,
     Challenge,
 )
 
@@ -30,7 +29,7 @@ class ChallengeGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengeGroup
-        fields = ["id", "name", "description", "created_at", "created_by", "members"]
+        fields = "__all__"
 
 
 class ChallengeDaySerializer(serializers.ModelSerializer):
@@ -55,15 +54,9 @@ class SolutionSerializer(serializers.ModelSerializer):
         ]
 
 
-class ChallengeParticipantSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ChallengeParticipant
-        fields = ["id", "user", "challenge", "joined_at", "is_active"]
-
 
 class ChallengeSerializer(serializers.ModelSerializer):
     challenge_days = ChallengeDaySerializer(many=True, read_only=True)
-    participants = ChallengeParticipantSerializer(many=True, read_only=True)
 
     class Meta:
         model = Challenge
