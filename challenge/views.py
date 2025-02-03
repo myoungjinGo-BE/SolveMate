@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
@@ -6,8 +8,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from SolveMate.helpers.response_helpers import ResponseHelper
-from challenge.models import Problem
-from challenge.serializers import ProblemSerializer, ProblemSearchSerializer
+from SolveMate.helpers.custom_model_viewsets import (
+    CustomModelViewSet,
+)
+from challenge.models import Problem, ChallengeDay
+from challenge.serializers import (
+    ProblemSerializer,
+    ProblemSearchSerializer,
+    ChallengeDaySerializer,
+)
 
 
 class ProblemViewSet(viewsets.GenericViewSet):
@@ -45,3 +54,40 @@ class ProblemViewSet(viewsets.GenericViewSet):
 
         serializer = self.get_serializer(problems, many=True)
         return ResponseHelper.success(serializer.data)
+
+
+class ChallengeDayViewSet(CustomModelViewSet):
+    queryset = ChallengeDay.objects.all()
+    serializer_class = ChallengeDaySerializer
+
+    def get_queryset(self):
+        # 현재 로그인한 유저가 속한 그룹의 ChallengeDay만 반환
+        user = self.request.user
+
+        # 쿼리 파라미터에서 날짜를 가져옴
+        date_str = self.request.query_params.get("date", None)
+        if date_str:
+            try:
+                target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                # 날짜 형식이 잘못된 경우 오늘 날짜를 기준으로 설정
+                target_date = datetime.now().date()
+        else:
+            # 쿼리 파라미터가 없는 경우 오늘 날짜를 기준으로 설정
+            target_date = datetime.now().date()
+
+        # 기준 날짜를 중심으로 앞뒤 3일씩 총 7일 데이터 필터링
+        start_date = target_date - timedelta(days=3)
+        end_date = target_date + timedelta(days=3)
+
+        # 기본 그룹의 ChallengeDay만 반환
+        return ChallengeDay.objects.filter(
+            group=user.default_group, date__range=[start_date, end_date]
+        )
+
+    def perform_create(self, serializer):
+        # 현재 로그인한 사용자 가져오기
+        user = self.request.user
+
+        # serializer에 author와 group 정보 전달
+        serializer.save(author=user, group=user.default_group)

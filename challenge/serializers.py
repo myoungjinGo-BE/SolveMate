@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from challenge.models import ChallengeGroup, Problem
+from challenge.models import ChallengeGroup, Problem, ChallengeDay
 
 
 class ChallengeGroupSerializer(serializers.ModelSerializer):
@@ -34,3 +34,26 @@ class ProblemSearchSerializer(serializers.Serializer):
     """문제 검색을 위한 시리얼라이저"""
 
     query = serializers.CharField(required=False, allow_blank=True)
+
+
+class ChallengeDaySerializer(serializers.ModelSerializer):
+    """챌린지 일차별 문제 정보를 위한 시리얼라이저"""
+
+    problem = ProblemSerializer()
+
+    class Meta:
+        model = ChallengeDay
+        fields = ["date", "problem", "group", "author"]
+        read_only_fields = ["group", "author"]
+
+    def create(self, validated_data):
+        # problem 데이터 분리
+        problem_data = validated_data.pop("problem")
+
+        # Problem 인스턴스 생성 또는 조회
+        problem = Problem.objects.get_or_create(**problem_data)[0]
+
+        # ChallengeDay 인스턴스 생성
+        challenge_day = ChallengeDay.objects.create(problem=problem, **validated_data)
+
+        return challenge_day
