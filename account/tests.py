@@ -1,7 +1,9 @@
 from rest_framework.test import APIClient
 
 from account.services.token_service import TokenService
-from account.fixtures import *
+from account.conftest import *
+from challenge.models import GroupMembership
+from challenge.services.group.services import GroupService
 
 
 @pytest.fixture(scope="session")
@@ -39,3 +41,10 @@ class TestUserViewSet:
         assert res.status_code == 201
         assert "access_token" in result
         assert "refresh_token" in result
+
+        # 유저가 그룹에 생성 되었는지 확인
+        assert User.objects.filter(username="test").exists()
+        assert ChallengeGroup.objects.filter(
+            name=GroupService.DEFAULT_GROUP_NAME
+        ).exists()
+        assert GroupMembership.objects.filter(user__username="test").exists()

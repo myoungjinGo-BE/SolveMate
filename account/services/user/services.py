@@ -2,7 +2,7 @@ from rest_framework.exceptions import ValidationError
 
 from account.serializers import UserSerializer
 from account.services.token_service import TokenService
-from challenge.services.service import GroupService
+from challenge.services.group.services import GroupService
 
 
 class UserService:
@@ -19,7 +19,8 @@ class UserService:
         user = serializer.save()
 
         # 기본 그룹에 추가
-        GroupService.join_default_group(user)
+        group_service = GroupService()
+        group_service.join_default_group(user)
 
         # 토큰 생성
         tokens = TokenService.generate_tokens_for_user(user)

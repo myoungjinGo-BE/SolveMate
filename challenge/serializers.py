@@ -1,75 +1,36 @@
 from rest_framework import serializers
-
-from challenge.models import (
-    Problem,
-    GroupMembership,
-    ChallengeGroup,
-    ChallengeDay,
-    Solution,
-    Challenge,
-)
-
-
-class ProblemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Problem
-        fields = ["id", "title", "platform", "link", "created_at"]
-
-
-class GroupMembershipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GroupMembership
-        fields = ["id", "user", "group", "role", "joined_at", "is_active"]
+from challenge.models import ChallengeGroup, Problem
 
 
 class ChallengeGroupSerializer(serializers.ModelSerializer):
-    members = GroupMembershipSerializer(
-        source="groupmembership_set", many=True, read_only=True
-    )
-
     class Meta:
         model = ChallengeGroup
         fields = "__all__"
 
 
-class ChallengeDaySerializer(serializers.ModelSerializer):
-    problem_detail = ProblemSerializer(source="problem", read_only=True)
+class ProblemSerializer(serializers.ModelSerializer):
+    """Problem 모델을 위한 시리얼라이저"""
+
+    platform_display = serializers.CharField(
+        source="get_platform_display", read_only=True
+    )
 
     class Meta:
-        model = ChallengeDay
-        fields = ["id", "day_number", "date", "problem", "problem_detail", "author"]
+        model = Problem
+        fields = ["id", "title", "platform", "platform_display", "link", "created_at"]
+        read_only_fields = ["created_at"]
+
+    def validate_platform(self, value):
+        """플랫폼 선택값 검증"""
+        valid_platforms = dict(Problem.PLATFORM_CHOICES).keys()
+        if value not in valid_platforms:
+            raise serializers.ValidationError(
+                f"플랫폼은 {', '.join(valid_platforms)} 중 하나여야 합니다."
+            )
+        return value
 
 
-class SolutionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Solution
-        fields = [
-            "id",
-            "user",
-            "challenge_day",
-            "status",
-            "solution_link",
-            "submitted_at",
-            "updated_at",
-        ]
+class ProblemSearchSerializer(serializers.Serializer):
+    """문제 검색을 위한 시리얼라이저"""
 
-
-
-class ChallengeSerializer(serializers.ModelSerializer):
-    challenge_days = ChallengeDaySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Challenge
-        fields = [
-            "id",
-            "title",
-            "description",
-            "group",
-            "start_date",
-            "end_date",
-            "created_by",
-            "created_at",
-            "is_active",
-            "challenge_days",
-            "participants",
-        ]
+    query = serializers.CharField(required=False, allow_blank=True)
